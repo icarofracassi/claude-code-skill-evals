@@ -1,7 +1,5 @@
 name: Eval Submitted Skill
 
-# Fires when a label is added to any issue.
-# Only acts when the label is exactly "status: eval-pending".
 on:
   issues:
     types: [labeled]
@@ -11,35 +9,163 @@ permissions:
   contents: read
 
 jobs:
-  eval:
-    if: github.event.label.name == 'status: eval-pending'
+  # ── Job 1: structural lint (Node.js, no API key needed) ────────────────────
+  lint:
+    name: Lint skill structure
+    if: "github.event.label.name == 'status: eval-pending'"
     runs-on: ubuntu-latest
+    outputs:
+      skill_found: ${{ steps.lint.outputs.skill_found }}
+      report: ${{ steps.lint.outputs.report }}
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install anthropic pyyaml
+      - uses: actions/checkout@v4
 
       - name: Write issue body to file
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
 
-      - name: Run skill evals
+      - name: Run structural lint
+        id: lint
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/issue_body.txt', 'utf8');
+
+            // ── helpers ──────────────────────────────────────────────────────
+            function extractSection(body, label) {
+              const pattern = new RegExp(`### ${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n+([\\s\\S]*?)(?=\\n### |$)`);
+              const m = body.match(pattern);
+              return m ? m[1].trim() : '';
+            }
+
+            function stripFence(text) {
+              const m = text.match(/```[a-z]*\n?([\s\S]*?)```/);
+              return m ? m[1].trim() : text.trim();
+            }
+
+            const PASS = (msg, detail = '') => `✅ [PASS] ${msg}${detail ? `\n         ${detail}` : ''}`;
+            const WARN = (msg, detail = '') => `⚠️  [WARN] ${msg}${detail ? `\n         ${detail}` : ''}`;
+            const FAIL = (msg, detail = '') => `❌ [FAIL] ${msg}${detail ? `\n         ${detail}` : ''}`;
+
+            // ── extract skill ────────────────────────────────────────────────
+            let raw = extractSection(body, 'Skill file content');
+            if (!raw) {
+              core.setOutput('skill_found', 'false');
+              core.setOutput('report', '❌ Could not extract skill content from issue body.\n   Use the Submit a Skill issue template.');
+              return;
+            }
+            const skill = raw.includes('```') ? stripFence(raw) : raw;
+            core.setOutput('skill_found', 'true');
+
+            const lines = [];
+            lines.push('=' .repeat(60));
+            lines.push('EVAL 1 — Structure / Lint (Node.js, no API key)');
+            lines.push('='.repeat(60));
+
+            // frontmatter block
+            const hasFrontmatter = skill.startsWith('---');
+            lines.push(hasFrontmatter ? PASS('Starts with YAML frontmatter') : FAIL('Missing opening --- frontmatter block'));
+
+            // required fields
+            const hasName = /^name:\s*\S+/m.test(skill);
+            lines.push(hasName ? PASS('`name` field present') : FAIL('`name` field missing from frontmatter'));
+
+            const hasDesc = /^description:/m.test(skill);
+            lines.push(hasDesc ? PASS('`description` field present') : FAIL('`description` field missing from frontmatter'));
+
+            // trigger language
+            const triggerKws = ['trigger', 'use when', 'use this when', 'whenever', 'invoke'];
+            const hasTrigger = triggerKws.some(kw => skill.toLowerCase().includes(kw));
+            lines.push(hasTrigger
+              ? PASS('Description includes trigger conditions')
+              : WARN('No trigger language found', "Add phrases like 'Use when…' or 'Trigger on:' so Claude routes correctly"));
+
+            // exclusion language (nice-to-have)
+            const excludeKws = ['do not', "don't", 'not trigger', 'exclude', 'only when'];
+            const hasExclusion = excludeKws.some(kw => skill.toLowerCase().includes(kw));
+            lines.push(hasExclusion
+              ? PASS('Description includes exclusion conditions (Do NOT…)')
+              : WARN('No exclusion language found', "Add 'Do NOT trigger on:' to prevent false positives"));
+
+            // placeholders
+            const placeholders = (skill.match(/⚠️ PLACEHOLDER|TODO:/g) || []).length;
+            lines.push(placeholders === 0
+              ? PASS('No unresolved placeholders')
+              : WARN(`${placeholders} unresolved placeholder(s) found`, 'Resolve or remove ⚠️ PLACEHOLDER / TODO: blocks before publishing'));
+
+            // length
+            const words = skill.split(/\s+/).filter(Boolean).length;
+            const lengthOk = words >= 30 && words <= 3000;
+            lines.push(lengthOk
+              ? PASS(`Skill length OK (${words} words)`)
+              : WARN(`Skill length unusual (${words} words)`, words < 30 ? 'Too short — may be too vague' : 'Very long — may exceed context window'));
+
+            // test cases YAML
+            const testRaw = extractSection(body, 'Test cases (YAML, optional)');
+            if (testRaw && testRaw.trim()) {
+              const testClean = testRaw.includes('```') ? stripFence(testRaw) : testRaw;
+              // basic YAML structure check — look for list items and known keys
+              const hasListItems = /^- /m.test(testClean);
+              const hasPromptKey = /prompt:/m.test(testClean);
+              lines.push((hasListItems && hasPromptKey)
+                ? PASS('Test cases YAML structure looks valid')
+                : WARN('Test cases YAML may be malformed', "Expected a YAML list with 'prompt:' keys"));
+            } else {
+              lines.push(WARN('No test cases provided', 'Add test cases to enable Evals 3 and 4 (output quality + scope adherence)'));
+            }
+
+            // summary
+            const report = lines.join('\n');
+            core.setOutput('report', report);
+            console.log(report);
+
+      - name: Post lint results as comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = `${{ steps.lint.outputs.report }}`;
+            const hasKey = `${{ secrets.ANTHROPIC_API_KEY != '' }}` === 'true';
+            const aiNote = hasKey
+              ? '_AI evals (trigger precision, output quality, scope adherence) will follow in the next job._'
+              : '> **ℹ️ AI evals skipped** — add `ANTHROPIC_API_KEY` to repository secrets to enable LLM-based checks (trigger precision, output quality, scope adherence).';
+            github.rest.issues.createComment({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🧪 Skill Eval Results\n\n\`\`\`\n${report}\n\`\`\`\n\n${aiNote}\n\n---\n_[workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`
+            });
+
+  # ── Job 2: AI evals (Python + Anthropic, only if API key is set) ───────────
+  ai-eval:
+    name: AI evals (trigger precision, output quality, scope adherence)
+    needs: lint
+    if: "github.event.label.name == 'status: eval-pending' && needs.lint.outputs.skill_found == 'true' && secrets.ANTHROPIC_API_KEY != ''"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install anthropic pyyaml
+
+      - name: Write issue body to file
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
+
+      - name: Run AI evals
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scripts/eval_skill.py > /tmp/eval_report.txt 2>&1
-        # continue even if evals fail so the comment is always posted
         continue-on-error: true
 
-      - name: Post eval result as comment
+      - name: Post AI eval results as comment
         uses: actions/github-script@v7
         with:
           script: |
@@ -52,5 +178,5 @@ jobs:
               owner:        context.repo.owner,
               repo:         context.repo.repo,
               issue_number: context.issue.number,
-              body: `## 🧪 Skill Eval Results\n\n\`\`\`\n${truncated}\n\`\`\`\n\n---\n_Triggered by label \`status: eval-pending\` · [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`
+              body: `### 🤖 AI Eval Results\n\n\`\`\`\n${truncated}\n\`\`\`\n\n---\n_[workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`
             });
