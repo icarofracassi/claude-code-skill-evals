@@ -2,7 +2,7 @@ name: Eval Submitted Skill
 
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
 
 permissions:
   issues: write
@@ -12,7 +12,9 @@ jobs:
   # ── Job 1: structural lint (Node.js, no API key needed) ────────────────────
   lint:
     name: Lint skill structure
-    if: "github.event.label.name == 'status: eval-pending'"
+    if: >
+      (github.event.action == 'labeled' && github.event.label.name == 'status: eval-pending') ||
+      (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'status: eval-pending'))
     runs-on: ubuntu-latest
     outputs:
       skill_found: ${{ steps.lint.outputs.skill_found }}
@@ -142,7 +144,11 @@ jobs:
   ai-eval:
     name: AI evals (trigger precision, output quality, scope adherence)
     needs: lint
-    if: "github.event.label.name == 'status: eval-pending' && needs.lint.outputs.skill_found == 'true'"
+    if: >
+      needs.lint.outputs.skill_found == 'true' && (
+        (github.event.action == 'labeled' && github.event.label.name == 'status: eval-pending') ||
+        (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'status: eval-pending'))
+      )
     runs-on: ubuntu-latest
 
     steps:
