@@ -1,0 +1,56 @@
+name: Eval Submitted Skill
+
+# Fires when a label is added to any issue.
+# Only acts when the label is exactly "status: eval-pending".
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  eval:
+    if: github.event.label.name == 'status: eval-pending'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic pyyaml
+
+      - name: Write issue body to file
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
+
+      - name: Run skill evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/eval_skill.py > /tmp/eval_report.txt 2>&1
+        # continue even if evals fail so the comment is always posted
+        continue-on-error: true
+
+      - name: Post eval result as comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('/tmp/eval_report.txt', 'utf8');
+            const truncated = report.length > 60000
+              ? report.slice(0, 60000) + '\n\n... (truncated)'
+              : report;
+            github.rest.issues.createComment({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🧪 Skill Eval Results\n\n\`\`\`\n${truncated}\n\`\`\`\n\n---\n_Triggered by label \`status: eval-pending\` · [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`
+            });

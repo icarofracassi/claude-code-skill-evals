@@ -1,0 +1,60 @@
+name: Submit a Skill
+description: Submit a Claude Code skill (.md file) for automated evaluation and review
+title: "[SKILL] "
+labels: ["status: eval-pending"]
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Submit a Claude Code Skill
+        Paste your skill file below. The eval pipeline will run automatically once this issue is labeled **status: eval-pending** (applied by default).
+
+        See the [README](../README.md) for the expected skill format.
+
+  - type: input
+    id: skill_name
+    attributes:
+      label: Skill name
+      description: The kebab-case name that will be used as the slash command
+      placeholder: e.g. email-triage
+    validations:
+      required: true
+
+  - type: textarea
+    id: skill_content
+    attributes:
+      label: Skill file content
+      description: Paste the full contents of your .md skill file here (frontmatter + body)
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_cases
+    attributes:
+      label: Test cases (YAML, optional)
+      description: |
+        Provide test inputs to evaluate output quality and scope adherence.
+        ```yaml
+        - prompt: "triage this email: subject is 'server down', body is 'prod is broken'"
+          should_trigger: true
+          expected_keywords: ["urgent", "priority", "escalate"]
+        - prompt: "write me a Python script"
+          should_trigger: false
+        ```
+      render: yaml
+
+  - type: input
+    id: owner
+    attributes:
+      label: Author / contact
+      placeholder: Your GitHub username or name
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context (optional)
+      description: Any background on the use case, domain, or design decisions
