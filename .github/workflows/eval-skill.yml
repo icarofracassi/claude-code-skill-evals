@@ -142,30 +142,60 @@ jobs:
   ai-eval:
     name: AI evals (trigger precision, output quality, scope adherence)
     needs: lint
-    if: "github.event.label.name == 'status: eval-pending' && needs.lint.outputs.skill_found == 'true' && secrets.ANTHROPIC_API_KEY != ''"
+    if: "github.event.label.name == 'status: eval-pending' && needs.lint.outputs.skill_found == 'true'"
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check API key is present
+        id: check-key
+        env:
+          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        run: |
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No ANTHROPIC_API_KEY secret found — AI evals will be skipped."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post skip notice if no API key
+        if: steps.check-key.outputs.skip == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+              body: `> **ℹ️ AI evals skipped** — add \`ANTHROPIC_API_KEY\` to repository secrets to enable LLM-based checks (trigger precision, output quality, scope adherence).`
+            });
+
       - uses: actions/checkout@v4
+        if: steps.check-key.outputs.skip == 'false'
 
       - uses: actions/setup-python@v5
+        if: steps.check-key.outputs.skip == 'false'
         with:
           python-version: '3.11'
 
       - run: pip install anthropic pyyaml
+        if: steps.check-key.outputs.skip == 'false'
 
       - name: Write issue body to file
+        if: steps.check-key.outputs.skip == 'false'
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
 
       - name: Run AI evals
+        if: steps.check-key.outputs.skip == 'false'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scripts/eval_skill.py > /tmp/eval_report.txt 2>&1
         continue-on-error: true
 
       - name: Post AI eval results as comment
+        if: steps.check-key.outputs.skip == 'false'
         uses: actions/github-script@v7
         with:
           script: |
