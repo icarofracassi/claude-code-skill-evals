@@ -94,6 +94,11 @@ def main() -> None:
         print("ERROR: sentinel comment not found in index.html.")
         sys.exit(1)
 
+    # Ensure the item immediately before the sentinel has a trailing comma.
+    # Covers both the hardcoded first item (ends with `}`) and previously
+    # inserted items (end with `},`).
+    html = re.sub(r"\}\s*\n(\s*// ACCEPTED SKILLS)", r"},\n\1", html)
+
     updated = html.replace(sentinel, sentinel + "\n" + entry, 1)
 
     with open("index.html", "w") as f:
