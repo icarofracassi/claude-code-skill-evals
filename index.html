@@ -4,336 +4,290 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude Code Skill Evals</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
-a{text-decoration:none}
-
-:root{
-  --blue:#1428A0;
-  --blue-dark:#0f1e85;
-  --blue-mid:#1e35b5;
-  --blue-light:#4A9FFF;
-  --orange:#FF7700;
-  --bg:#f0f4f8;
-  --white:#ffffff;
-  --border:#d8e4f0;
-  --text:#0a1830;
-  --text-mid:#446;
-  --text-muted:#6688aa;
-  --green-bg:#e6f9ee;--green-text:#1a9050;
-  --yellow-bg:#fdf6e0;--yellow-text:#8a6010;
-  --purple-bg:#f0eaff;--purple-text:#5a0ea0;
-  --radius:10px;--radius-sm:6px;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #0070F2;
+  --dark-blue: #003B69;
+  --gold: #E8B600;
+  --green: #188918;
+  --orange: #E76500;
+  --purple: #6b3fa0;
+  --gray: #6A6D70;
+  --light-gray: #F5F6F7;
+  --border: #D9DADB;
+  --white: #FFFFFF;
+  --text: #1D2D3E;
 }
-
-/* ── HERO ── */
-.hero{
-  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-mid) 60%,#2040c8 100%);
-  padding:40px 48px;position:relative;overflow:hidden;
-}
-.hero::after{
-  content:'';position:absolute;top:-60px;right:-60px;
-  width:420px;height:420px;
-  background:radial-gradient(circle,rgba(255,255,255,.07) 0%,transparent 70%);
-  pointer-events:none;
-}
-.hero-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:36px;position:relative;z-index:1}
-.hero-icon{
-  width:90px;height:90px;flex-shrink:0;border-radius:16px;
-  background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;
-  font-size:2.4rem;
-}
-.hero-text h1{font-size:1.75rem;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.3}
-.hero-text p{font-size:1rem;color:rgba(255,255,255,.82);max-width:640px;line-height:1.7}
-.hero-actions{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
-.btn-hero{
-  display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
-  border-radius:7px;font-size:.85rem;font-weight:700;cursor:pointer;
-  transition:all .15s;text-decoration:none;
-}
-.btn-hero-primary{background:var(--orange);color:#fff;border:none;box-shadow:0 2px 8px rgba(255,119,0,.3)}
-.btn-hero-primary:hover{background:#e06000;transform:translateY(-1px)}
-.btn-hero-secondary{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3)}
-.btn-hero-secondary:hover{background:rgba(255,255,255,.2)}
+html { scroll-behavior: smooth; }
+body { font-family: "Segoe UI", Arial, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--light-gray); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
 /* ── NAV ── */
-.nav-wrap{background:var(--white);border-bottom:2px solid var(--blue);position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.nav-inner{max-width:1300px;margin:0 auto;padding:0 48px;display:flex;gap:0}
-.nav-tab{
-  padding:15px 24px;font-size:.9rem;font-weight:600;color:var(--text-muted);cursor:pointer;
-  border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;
-  display:flex;align-items:center;gap:6px;user-select:none;
-}
-.nav-tab:hover{color:var(--blue);background:rgba(20,40,160,.04)}
-.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
-.nav-cnt{background:#e2e8f0;color:var(--text-muted);border-radius:10px;padding:1px 7px;font-size:.7rem;font-weight:700}
-.nav-tab.active .nav-cnt{background:rgba(20,40,160,.12);color:var(--blue)}
+nav { position: sticky; top: 0; z-index: 100; background: var(--dark-blue); border-bottom: 3px solid var(--gold); }
+nav .container { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; }
+.nav-brand { color: var(--white); font-size: 17px; font-weight: 700; }
+.nav-brand span { color: var(--gold); }
+.nav-links { display: flex; gap: 4px; list-style: none; }
+.nav-links a { color: rgba(255,255,255,0.75); font-size: 13px; padding: 6px 14px; border-radius: 4px; transition: background 0.15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--white); background: rgba(255,255,255,0.15); text-decoration: none; font-weight: 600; }
+
+/* ── HERO ── */
+.hero { background: linear-gradient(135deg, var(--dark-blue) 0%, #005b9f 100%); color: var(--white); padding: 52px 0 44px; }
+.hero-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.hero h1 { font-size: 30px; font-weight: 700; margin-bottom: 10px; }
+.hero p { font-size: 14.5px; color: rgba(255,255,255,0.78); max-width: 580px; margin-bottom: 0; }
+.hero-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-hero { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 6px; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .15s; text-decoration: none; border: none; }
+.btn-hero-primary { background: var(--gold); color: var(--dark-blue); }
+.btn-hero-primary:hover { background: #d4a500; text-decoration: none; }
+.btn-hero-secondary { background: rgba(255,255,255,.12); color: #fff; border: 1.5px solid rgba(255,255,255,.3); }
+.btn-hero-secondary:hover { background: rgba(255,255,255,.22); text-decoration: none; }
+.hero-meta { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.5); display: flex; gap: 20px; flex-wrap: wrap; }
 
 /* ── FILTER BAR ── */
-.filter-wrap{background:var(--white);border-bottom:1px solid var(--border);padding:14px 48px}
-.filter-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.filter-group{display:flex;align-items:center;gap:8px}
-.filter-label{font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-.chips{display:flex;gap:5px;flex-wrap:wrap}
-.chip{
-  padding:4px 12px;border-radius:16px;font-size:.75rem;font-weight:600;
-  cursor:pointer;border:1px solid var(--border);color:var(--text-mid);background:var(--bg);
-  transition:all .15s;user-select:none;
-}
-.chip:hover{border-color:var(--blue);color:var(--blue)}
-.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.chip.phase-idea.active{background:#7c3aed;border-color:#7c3aed}
-.chip.phase-testing.active{background:var(--orange);border-color:var(--orange)}
-.chip.phase-released.active{background:#16a34a;border-color:#16a34a}
-.vdiv{width:1px;height:26px;background:var(--border);flex-shrink:0}
-.filter-count{margin-left:auto;font-size:.8rem;color:var(--text-muted)}
-.filter-count b{color:var(--blue);font-weight:700}
-
-/* ── MAIN ── */
-.main{max-width:1300px;margin:0 auto;padding:32px 48px 80px}
-
-/* ── SECTION HEADER ── */
-.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--border)}
-.sec-title{font-size:1rem;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.08em}
-.sec-badge{padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:700;background:rgba(20,40,160,.1);color:var(--blue)}
+.filter-bar { padding: 20px 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.filter-btn { font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--gray); transition: all .15s; }
+.filter-btn:hover, .filter-btn.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+.filter-count { margin-left: auto; font-size: 12px; color: var(--gray); }
+.filter-count b { color: var(--blue); }
 
 /* ── GRID ── */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-bottom:48px}
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; padding: 8px 0 64px; }
+.skill-card.hidden { display: none; }
 
 /* ── CARD ── */
-.card{
-  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
-  padding:22px;display:flex;flex-direction:column;gap:14px;
-  transition:all .2s;cursor:pointer;position:relative;overflow:hidden;
+.skill-card {
+  background: var(--white); border: 1px solid var(--border); border-top: 3px solid var(--blue);
+  border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+  cursor: pointer; transition: box-shadow .15s, transform .15s;
 }
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--blue),var(--blue-light));
-  transform:scaleX(0);transform-origin:left;transition:transform .25s;
-}
-.card:hover{border-color:rgba(20,40,160,.3);box-shadow:0 6px 24px rgba(20,40,160,.1);transform:translateY(-2px)}
-.card:hover::before{transform:scaleX(1)}
-.card-title{font-size:.95rem;font-weight:700;color:var(--text);line-height:1.35}
-.card-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.skill-card:hover { box-shadow: 0 4px 20px rgba(0,112,242,.12); transform: translateY(-2px); }
+.skill-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.skill-name { font-size: 14px; font-weight: 700; color: var(--dark-blue); font-family: monospace; }
+.skill-category { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; padding: 2px 8px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+.cat-community { background: #e8f3fe; color: var(--blue); border: 1px solid var(--blue); }
+.cat-dev       { background: #fef8e1; color: #9a7800; border: 1px solid var(--gold); }
+.cat-writing   { background: #eaf6ea; color: var(--green); border: 1px solid var(--green); }
+.cat-support   { background: #f3eafe; color: var(--purple); border: 1px solid var(--purple); }
 
-/* ── BADGES ── */
-.badge{padding:2px 9px;border-radius:10px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:3px}
-.bt-skill{background:rgba(255,119,0,.1);color:var(--orange)}
-.bt-tool{background:rgba(20,40,160,.1);color:var(--blue)}
-.bt-agent{background:rgba(20,40,160,.1);color:var(--blue)}
-.bt-guide{background:var(--purple-bg);color:var(--purple-text)}
-.bp-idea{background:#f5f0ff;color:#7c3aed}
-.bp-testing{background:#fff7ed;color:#c05300}
-.bp-released{background:var(--green-bg);color:var(--green-text)}
-.bcat{background:#f0f4f8;color:var(--text-muted);border:1px solid var(--border)}
+.skill-desc { font-size: 13px; color: var(--gray); flex: 1; line-height: 1.55; }
+.skill-trigger { font-size: 12px; color: var(--gray); background: var(--light-gray); border-radius: 4px; padding: 7px 10px; }
+.skill-trigger strong { color: var(--dark-blue); }
+.skill-invoke { display: inline-block; font-size: 12px; font-weight: 700; font-family: monospace; color: var(--blue); background: #e8f3fe; border: 1px solid var(--blue); border-radius: 4px; padding: 3px 10px; align-self: flex-start; }
 
-.card-desc{font-size:.83rem;color:var(--text-mid);line-height:1.6;flex-grow:1}
-.card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--border);margin-top:auto}
-.card-owner{font-size:.75rem;color:var(--text-muted)}
-.card-owner strong{color:var(--text-mid)}
-.btn-details{
-  padding:7px 14px;background:transparent;border:1.5px solid var(--blue);
-  color:var(--blue);border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-}
-.btn-details:hover{background:var(--blue);color:#fff}
+/* ── EVAL PILL ── */
+.eval-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 10px; }
+.eval-pass { background: #eaf6ea; color: var(--green); border: 1px solid var(--green); }
+.eval-warn { background: #fef8e1; color: #9a7800; border: 1px solid var(--gold); }
+.eval-none { background: var(--light-gray); color: var(--gray); border: 1px solid var(--border); }
 
-/* ── EMPTY ── */
-.empty{text-align:center;padding:80px 20px;color:var(--text-muted)}
-.empty-icon{font-size:3rem;margin-bottom:16px;opacity:.5}
-.empty h3{font-size:1.1rem;color:var(--text-mid);margin-bottom:8px}
-.empty p{font-size:.9rem}
+.skill-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.skill-meta-right { display: flex; align-items: center; gap: 6px; }
+.skill-owner { font-size: 11px; color: #aaa; }
+.skill-issue-link { font-size: 11px; color: var(--gray); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; white-space: nowrap; transition: all .12s; text-decoration: none; }
+.skill-issue-link:hover { border-color: var(--blue); color: var(--blue); text-decoration: none; }
 
-/* ── SUBMIT EMPTY STATE ── */
-.submit-empty{text-align:center;padding:80px 24px;border:2px dashed var(--border);border-radius:12px;margin:24px 0}
-.submit-empty .ie-icon{font-size:3rem;margin-bottom:16px}
-.submit-empty h3{font-size:1.1rem;color:var(--text);margin-bottom:8px;font-weight:700}
-.submit-empty p{color:var(--text-muted);margin-bottom:24px;max-width:420px;margin:0 auto 24px}
-
-/* ── MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(10,24,48,.55);backdrop-filter:blur(3px);
-  z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{
-  background:var(--white);border-radius:16px;max-width:580px;width:100%;
-  position:relative;transform:scale(.96) translateY(12px);transition:transform .2s;
-  max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(20,40,160,.2);
-}
-.modal-overlay.open .modal{transform:scale(1) translateY(0)}
-.modal-header{
-  padding:28px 28px 20px;border-bottom:1px solid var(--border);
-  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
-  position:sticky;top:0;background:var(--white);z-index:1;border-radius:16px 16px 0 0;
-}
-.modal-title{font-size:1.15rem;font-weight:800;color:var(--text);line-height:1.3}
-.modal-close{
-  background:none;border:none;font-size:1.3rem;cursor:pointer;
-  color:var(--text-muted);padding:4px;line-height:1;flex-shrink:0;
-  border-radius:6px;transition:all .15s;
-}
-.modal-close:hover{background:#f0f4f8;color:var(--text)}
-.modal-body{padding:24px 28px 28px}
-.modal-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
-.modal-section{margin-bottom:20px}
-.modal-section-label{
-  font-size:.7rem;font-weight:800;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;
-}
-.modal-section-value{font-size:.9rem;color:var(--text-mid);line-height:1.65}
-.modal-links{display:flex;flex-direction:column;gap:8px;margin-top:4px}
-.modal-link{
-  display:inline-flex;align-items:center;gap:8px;padding:9px 14px;
-  border-radius:7px;font-size:.82rem;font-weight:600;transition:all .15s;
-}
-.modal-link-primary{background:var(--blue);color:#fff}
-.modal-link-primary:hover{background:var(--blue-dark)}
-.modal-link-secondary{background:#f0f4f8;color:var(--text-mid);border:1px solid var(--border)}
-.modal-link-secondary:hover{border-color:var(--blue);color:var(--blue)}
-.modal-eval-box{
-  background:#f8faff;border:1px solid rgba(20,40,160,.15);
-  border-radius:8px;padding:14px 16px;margin-top:4px;
-}
-.eval-row{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid rgba(20,40,160,.07)}
-.eval-row:last-child{border-bottom:none}
-.eval-icon{font-size:.9rem;flex-shrink:0;margin-top:1px}
-.eval-text{font-size:.82rem;color:var(--text-mid);line-height:1.5}
-.eval-text strong{color:var(--text);display:block;font-size:.78rem;margin-bottom:1px}
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 80px 24px; border: 2px dashed var(--border); border-radius: 8px; margin: 24px 0; background: var(--white); }
+.empty-state .icon { font-size: 3rem; margin-bottom: 14px; }
+.empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; font-weight: 700; }
+.empty-state p { color: var(--gray); margin-bottom: 20px; max-width: 380px; margin-left: auto; margin-right: auto; }
 
 /* ── HOW IT WORKS ── */
-.how-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:48px}
-.how-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative}
-.how-step{
-  width:32px;height:32px;border-radius:50%;
-  background:var(--blue);color:#fff;font-weight:800;font-size:.85rem;
-  display:flex;align-items:center;justify-content:center;margin-bottom:12px;
-}
-.how-title{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:6px}
-.how-desc{font-size:.8rem;color:var(--text-muted);line-height:1.6}
-.how-arrow{
-  position:absolute;right:-10px;top:50%;transform:translateY(-50%);
-  color:var(--blue-light);font-size:1.2rem;z-index:1;
-}
+.how-section { padding: 40px 0 48px; }
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 36px; }
+.how-card { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 18px; }
+.how-step { width: 28px; height: 28px; border-radius: 50%; background: var(--dark-blue); color: #fff; font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.how-title { font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.how-desc { font-size: .78rem; color: var(--gray); line-height: 1.55; }
+.how-desc code { background: var(--light-gray); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: .75rem; color: var(--dark-blue); }
 
-/* ── EVAL TABLE ── */
-.eval-table{width:100%;border-collapse:collapse;font-size:.83rem;margin-bottom:48px}
-.eval-table th{
-  background:rgba(20,40,160,.06);color:var(--blue);font-weight:700;
-  padding:10px 14px;text-align:left;border-bottom:2px solid rgba(20,40,160,.12);font-size:.75rem;
-  text-transform:uppercase;letter-spacing:.05em;
-}
-.eval-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text-mid);vertical-align:top}
-.eval-table tr:last-child td{border-bottom:none}
-.eval-table tr:hover td{background:rgba(20,40,160,.02)}
-.eval-num{
-  width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;
-  font-weight:800;font-size:.75rem;display:inline-flex;align-items:center;justify-content:center;
-}
-.eval-free{
-  display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;
-  background:var(--green-bg);color:var(--green-text);white-space:nowrap;
-}
-.eval-api{
-  display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;
-  background:rgba(20,40,160,.08);color:var(--blue);white-space:nowrap;
-}
+.eval-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-bottom: 36px; background: var(--white); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+.eval-table th { background: #e8f3fe; color: var(--dark-blue); font-weight: 700; padding: 9px 13px; text-align: left; font-size: .73rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: 2px solid var(--blue); }
+.eval-table td { padding: 10px 13px; border-bottom: 1px solid var(--border); color: var(--gray); vertical-align: top; }
+.eval-table tr:last-child td { border-bottom: none; }
+.eval-table code { background: var(--light-gray); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: .75rem; color: var(--dark-blue); }
+.tag-free { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: .67rem; font-weight: 700; background: #eaf6ea; color: var(--green); }
+.tag-api  { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: .67rem; font-weight: 700; background: #e8f3fe; color: var(--blue); }
+.tag-num  { width: 26px; height: 26px; border-radius: 50%; background: var(--dark-blue); color: #fff; font-weight: 800; font-size: .75rem; display: inline-flex; align-items: center; justify-content: center; }
 
-/* ── SETUP STEPS ── */
-.setup-steps{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:48px}
-.setup-step{
-  display:flex;align-items:flex-start;gap:14px;
-  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;
-}
-.setup-num{
-  width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;
-  font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.setup-text{font-size:.88rem;color:var(--text-mid);line-height:1.6}
-.setup-text strong{color:var(--text);display:block;margin-bottom:2px}
-.setup-text code{
-  background:#f0f4f8;border:1px solid var(--border);border-radius:4px;
-  padding:1px 6px;font-size:.8rem;color:var(--blue);font-family:monospace;
-}
+/* ── SETUP ── */
+.setup-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 48px; }
+.setup-item { display: flex; align-items: flex-start; gap: 14px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.setup-num { width: 26px; height: 26px; border-radius: 50%; background: var(--dark-blue); color: #fff; font-weight: 800; font-size: .78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.setup-text { font-size: .86rem; color: var(--gray); line-height: 1.6; }
+.setup-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+.setup-text code { background: var(--light-gray); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: .78rem; color: var(--dark-blue); }
+.setup-text a { color: var(--blue); }
 
-@media(max-width:700px){
-  .hero{padding:28px 20px}
-  .nav-inner,.filter-inner,.main{padding-left:16px;padding-right:16px}
-  .how-grid{grid-template-columns:1fr}
-  .how-arrow{display:none}
-  .eval-table{font-size:.78rem}
-}
+/* ── MODAL ── */
+#md-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.72); align-items: flex-start; justify-content: center; padding: 48px 24px 32px; gap: 16px; }
+#md-modal.open { display: flex; }
+#md-panel { background: var(--white); border-radius: 8px; width: 100%; max-width: 800px; box-shadow: 0 16px 64px rgba(0,0,0,.5); overflow: hidden; display: flex; flex-direction: column; max-height: 86vh; }
+#md-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--dark-blue); border-bottom: 3px solid var(--gold); flex-shrink: 0; gap: 12px; }
+#md-header-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+#md-title { font-size: 14px; font-weight: 700; color: var(--white); font-family: monospace; }
+#md-subtitle { font-size: 11px; color: rgba(255,255,255,.45); }
+#md-close { background: none; border: none; color: rgba(255,255,255,.6); font-size: 26px; line-height: 1; cursor: pointer; flex-shrink: 0; }
+#md-close:hover { color: var(--white); }
+#md-body { padding: 22px 24px 28px; font-size: 12.5px; line-height: 1.6; color: var(--text); overflow-y: auto; flex: 1; }
+#md-body h1,#md-body h2 { font-size: 14px; font-weight: 700; color: var(--dark-blue); margin: 18px 0 6px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+#md-body h3 { font-size: 13px; font-weight: 700; color: var(--dark-blue); margin: 13px 0 4px; }
+#md-body p  { margin-bottom: 8px; color: var(--gray); }
+#md-body ul,#md-body ol { margin: 6px 0 8px 18px; color: var(--gray); }
+#md-body li { margin-bottom: 3px; }
+#md-body code { font-family: monospace; font-size: 11.5px; background: var(--light-gray); padding: 1px 5px; border-radius: 3px; color: var(--dark-blue); }
+#md-body pre { background: var(--light-gray); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; overflow-x: auto; margin: 10px 0; }
+#md-body pre code { background: none; padding: 0; }
+#md-body blockquote { border-left: 4px solid var(--blue); background: #e8f3fe; padding: 8px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+#md-body blockquote p { color: var(--dark-blue); margin: 0; }
+#md-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+#md-body strong { color: var(--text); }
+#md-body table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+#md-body th { background: #e8f3fe; padding: 7px 10px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--blue); }
+#md-body td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+
+/* YAML frontmatter block */
+.yaml-block { background: var(--light-gray); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 0 4px 4px 0; padding: 12px 16px; margin-bottom: 18px; display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 12px; line-height: 1.5; }
+.yaml-key { font-family: monospace; font-weight: 700; color: var(--blue); white-space: nowrap; }
+.yaml-val { color: var(--gray); word-break: break-word; }
+
+/* Eval results section inside modal */
+.eval-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.eval-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--gray); margin-bottom: 10px; }
+.eval-rows { display: flex; flex-direction: column; gap: 6px; }
+.eval-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; background: var(--light-gray); border-radius: 4px; }
+.eval-icon { font-size: .85rem; flex-shrink: 0; margin-top: 1px; }
+.eval-label { font-size: .8rem; font-weight: 700; color: var(--text); }
+.eval-detail { font-size: .77rem; color: var(--gray); margin-top: 1px; }
+
+footer { background: var(--dark-blue); color: rgba(255,255,255,.5); padding: 28px 0; font-size: 12px; text-align: center; border-top: 3px solid var(--gold); margin-top: 40px; }
+footer strong { color: rgba(255,255,255,.8); }
+footer a { color: rgba(255,255,255,.55); }
+
+@media(max-width:700px) { .how-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:480px) { .how-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<!-- ── HERO ── -->
+<nav>
+  <div class="container">
+    <span class="nav-brand">Claude Code <span>Skill Evals</span></span>
+    <ul class="nav-links">
+      <li><a href="#" class="active" onclick="setTab('skills');return false">Skills</a></li>
+      <li><a href="#" onclick="setTab('how');return false">How it works</a></li>
+      <li><a href="#" onclick="setTab('setup');return false">Setup</a></li>
+      <li><a href="https://github.com/icarofracassi/claude-code-skill-evals" target="_blank" rel="noopener">GitHub ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
 <div class="hero">
-  <div class="hero-inner">
-    <div class="hero-icon">🧪</div>
-    <div class="hero-text">
-      <h1>Claude Code Skill Evals</h1>
-      <p>A community-driven library of evaluated Claude Code skills. Submit a skill via GitHub Issues and the pipeline automatically lints its structure and runs AI-powered quality checks — no setup required to contribute.</p>
-      <div class="hero-actions">
-        <a class="btn-hero btn-hero-primary" href="https://github.com/icarofracassi/claude-code-skill-evals/issues/new?template=submit-skill.yml" target="_blank" rel="noopener">&#10010; Submit a Skill</a>
-        <a class="btn-hero btn-hero-secondary" href="https://github.com/icarofracassi/claude-code-skill-evals" target="_blank" rel="noopener">&#128279; GitHub</a>
-      </div>
+  <div class="container">
+    <div class="hero-eyebrow">Claude Code · Community Skills</div>
+    <h1>Claude Code Skill Evals</h1>
+    <p>A community-driven library of evaluated Claude Code skills. Submit a skill via GitHub Issues — the pipeline automatically lints its structure and runs AI-powered quality checks.</p>
+    <div class="hero-actions">
+      <a class="btn-hero btn-hero-primary" href="https://github.com/icarofracassi/claude-code-skill-evals/issues/new?template=submit-skill.yml" target="_blank" rel="noopener">+ Submit a Skill</a>
+      <a class="btn-hero btn-hero-secondary" href="https://github.com/icarofracassi/claude-code-skill-evals" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+    <div class="hero-meta">
+      <span id="hero-count">0 skills</span>
+      <span>Automated evals on every submission</span>
     </div>
   </div>
 </div>
 
-<!-- ── NAV ── -->
-<div class="nav-wrap">
-  <div class="nav-inner">
-    <div class="nav-tab active" data-tab="skills" onclick="setTab('skills')">Skills <span class="nav-cnt" id="cnt-skills">0</span></div>
-    <div class="nav-tab" data-tab="how" onclick="setTab('how')">How it works</div>
-    <div class="nav-tab" data-tab="setup" onclick="setTab('setup')">Setup</div>
+<div class="container">
+  <div id="tab-skills">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="community">Community</button>
+      <button class="filter-btn" data-cat="dev">Dev</button>
+      <button class="filter-btn" data-cat="writing">Writing</button>
+      <button class="filter-btn" data-cat="support">Support</button>
+      <span class="filter-count">Showing <b id="visible-count">0</b> skills</span>
+    </div>
+    <div class="skills-grid" id="skills-grid"></div>
   </div>
-</div>
 
-<!-- ── FILTER BAR (skills tab only) ── -->
-<div class="filter-wrap" id="filterBar">
-  <div class="filter-inner">
-    <div class="filter-group">
-      <span class="filter-label">Type</span>
-      <div class="chips">
-        <span class="chip active" data-type="all" onclick="setType('all')">All</span>
-        <span class="chip" data-type="Skill" onclick="setType('Skill')">Skill</span>
-        <span class="chip" data-type="Tool" onclick="setType('Tool')">Tool</span>
-        <span class="chip" data-type="Agent" onclick="setType('Agent')">Agent</span>
+  <div id="tab-how" style="display:none">
+    <div class="how-section">
+      <div class="section-title">How it works</div>
+      <div class="how-grid">
+        <div class="how-card"><div class="how-step">1</div><div class="how-title">Submit via Issue</div><div class="how-desc">Open a GitHub Issue using the Submit a Skill template. Paste your skill's Markdown and optional YAML test cases.</div></div>
+        <div class="how-card"><div class="how-step">2</div><div class="how-title">Label triggers workflow</div><div class="how-desc">The label <code>status: eval-pending</code> fires automatically on submission and starts the eval pipeline.</div></div>
+        <div class="how-card"><div class="how-step">3</div><div class="how-title">Lint runs (free)</div><div class="how-desc">A Node.js job checks frontmatter, trigger language, exclusions, and test case YAML. No API key needed.</div></div>
+        <div class="how-card"><div class="how-step">4</div><div class="how-title">AI evals (optional)</div><div class="how-desc">If <code>ANTHROPIC_API_KEY</code> is set, a second job runs LLM-based checks: trigger precision, output quality, scope adherence.</div></div>
+        <div class="how-card"><div class="how-step">5</div><div class="how-title">Results posted</div><div class="how-desc">Both jobs post results as comments on the issue. Reviewer approves, adds <code>status: accepted</code>, and the skill appears here.</div></div>
+      </div>
+
+      <div class="section-title">Eval checks</div>
+      <table class="eval-table">
+        <thead><tr><th>#</th><th>Eval</th><th>Cost</th><th>What it checks</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag-num">1</span></td><td><strong>Structure lint</strong></td><td><span class="tag-free">Free</span></td><td>Frontmatter fields (<code>name</code>, <code>description</code>), trigger language, exclusion language, unresolved placeholders, word count, test case YAML shape</td></tr>
+          <tr><td><span class="tag-num">2</span></td><td><strong>Trigger precision</strong></td><td><span class="tag-api">API key</span></td><td>LLM judge: is the description specific enough to route correctly? Would it match unrelated prompts?</td></tr>
+          <tr><td><span class="tag-num">3</span></td><td><strong>Output quality</strong></td><td><span class="tag-api">API key</span></td><td>Runs the skill on each user-provided in-scope test prompt; checks output contains expected keywords</td></tr>
+          <tr><td><span class="tag-num">4</span></td><td><strong>Scope adherence</strong></td><td><span class="tag-api">API key</span></td><td>Runs the skill on out-of-scope prompts; LLM judge verifies the skill declined or redirected correctly</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-title">Skill file format</div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:48px">
+        <pre style="font-size:.82rem;color:var(--gray);line-height:1.7;overflow-x:auto">---
+name: my-skill-name
+description: &gt;
+  What this skill does and when to invoke it.
+  Include trigger phrases ("Use when...") and exclusions ("Do NOT trigger on:").
+---
+
+# My Skill
+
+Step-by-step instructions here...</pre>
       </div>
     </div>
-    <div class="vdiv"></div>
-    <div class="filter-group">
-      <span class="filter-label">Phase</span>
-      <div class="chips">
-        <span class="chip active" data-phase="all" onclick="setPhase('all')">All</span>
-        <span class="chip phase-released" data-phase="Released" onclick="setPhase('Released')">&#10003; Released</span>
-        <span class="chip phase-testing" data-phase="Testing" onclick="setPhase('Testing')">&#128300; Testing</span>
-        <span class="chip phase-idea" data-phase="Idea" onclick="setPhase('Idea')">&#128161; Idea</span>
-      </div>
-    </div>
-    <span class="filter-count">Showing <b id="visibleCount">0</b> items</span>
   </div>
-</div>
 
-<!-- ── MAIN CONTENT ── -->
-<div class="main">
-  <div id="mainContent"></div>
+  <div id="tab-setup" style="display:none">
+    <div class="how-section">
+      <div class="section-title">Setup</div>
+      <ol class="setup-list">
+        <li class="setup-item"><div class="setup-num">1</div><div class="setup-text"><strong>Fork or clone the repo</strong><a href="https://github.com/icarofracassi/claude-code-skill-evals" target="_blank" rel="noopener">github.com/icarofracassi/claude-code-skill-evals</a></div></li>
+        <li class="setup-item"><div class="setup-num">2</div><div class="setup-text"><strong>Add your Anthropic API key (optional)</strong>In <strong>Settings → Secrets and variables → Actions</strong>, add a secret named <code>ANTHROPIC_API_KEY</code>. Without it, only the free structural lint runs. <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a key →</a></div></li>
+        <li class="setup-item"><div class="setup-num">3</div><div class="setup-text"><strong>Submit a skill</strong>Open an issue using the Submit a Skill template. The label <code>status: eval-pending</code> is applied automatically and triggers the workflow.</div></li>
+        <li class="setup-item"><div class="setup-num">4</div><div class="setup-text"><strong>Review and accept</strong>Fix any failures, re-trigger with the label, then add <code>status: accepted</code> to publish to this site.</div></li>
+        <li class="setup-item"><div class="setup-num">5</div><div class="setup-text"><strong>Run evals locally (optional)</strong><code>pip install anthropic pyyaml</code>, set <code>ANTHROPIC_API_KEY</code>, write your issue body to <code>/tmp/issue_body.txt</code>, then run <code>python scripts/eval_skill.py</code>.</div></li>
+      </ol>
+    </div>
+  </div>
 </div>
 
 <!-- ── MODAL ── -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modalBox">
-    <div class="modal-header">
-      <div class="modal-title" id="modalTitle"></div>
-      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+<div id="md-modal">
+  <div id="md-panel">
+    <div id="md-header">
+      <div id="md-header-left">
+        <span id="md-title"></span>
+        <span id="md-subtitle"></span>
+      </div>
+      <button id="md-close" aria-label="Close">&times;</button>
     </div>
-    <div class="modal-body" id="modalBody"></div>
+    <div id="md-body"></div>
   </div>
 </div>
+
+<footer>
+  <div class="container">
+    <p><strong>Claude Code Skill Evals</strong> · Community skill library with automated quality checks · <a href="https://github.com/icarofracassi/claude-code-skill-evals">GitHub ↗</a></p>
+  </div>
+</footer>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -342,319 +296,199 @@ a{text-decoration:none}
 const ITEMS = [
   {
     id: 1,
-    name: "Email Triage",
+    name: "email-triage",
     type: "Skill",
-    tags: ["Productivity"],
-    phase: "Released",
+    cat: "community",
     owner: "icarofracassi",
     desc: "Classifies the urgency of an incoming email or support ticket, extracts key entities, and suggests a next action. Outputs a structured triage note — not a reply.",
+    trigger: "triage this, how urgent is this, classify this ticket",
     skillUrl: "https://github.com/icarofracassi/claude-code-skill-evals/blob/master/skills/examples/email-triage.md",
     issueUrl: null,
     evals: [
       { status: "pass", label: "Structure lint", detail: "Frontmatter valid, trigger language present, no placeholders" },
       { status: "pass", label: "Trigger precision", detail: "Description clearly scoped to triage; exclusions stated" },
       { status: "pass", label: "Output quality", detail: "Urgency level, summary, and ACTION present in output" },
-      { status: "pass", label: "Scope adherence", detail: "Correctly declines 'write a reply' prompt" }
+      { status: "pass", label: "Scope adherence", detail: "Correctly declines write-a-reply prompt" }
     ]
   },
   // ACCEPTED SKILLS - DO NOT EDIT MANUALLY
-  {
-    id: 2,
-    name: "test1",
-    type: "Skill",
-    tags: ["Community"],
-    phase: "Released",
-    owner: "icarofracassi",
-    desc: "",
-    skillUrl: "https://github.com/icarofracassi/claude-code-skill-evals/blob/master/skills/accepted/skill-2.md",
-    issueUrl: "https://github.com/icarofracassi/claude-code-skill-evals/issues/2",
-    evals: []
-  },
   // END ACCEPTED SKILLS
 ];
 
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-let activeTab = 'skills', activeType = 'all', activePhase = 'all';
+let activeTab = 'skills', activeCat = 'all';
 
 // ═══════════════════════════════════════════════
-// BADGE HELPERS
+// HELPERS
 // ═══════════════════════════════════════════════
-function typeCls(t) {
-  if (t === 'Skill') return 'bt-skill';
-  if (t === 'Agent') return 'bt-agent';
-  if (t === 'Tool') return 'bt-tool';
-  return 'bt-guide';
+function evalSummary(evals) {
+  if (!evals || !evals.length) return { cls: 'eval-none', label: '— no evals' };
+  const pass = evals.filter(e => e.status === 'pass').length;
+  const total = evals.length;
+  if (pass === total) return { cls: 'eval-pass', label: '✅ ' + pass + '/' + total + ' evals' };
+  return { cls: 'eval-warn', label: '⚠️ ' + pass + '/' + total + ' evals' };
 }
-function phaseCls(p) {
-  if (p === 'Idea') return 'bp-idea';
-  if (p === 'Testing') return 'bp-testing';
-  return 'bp-released';
-}
-function phaseIcon(p) {
-  if (p === 'Idea') return '&#128161;';
-  if (p === 'Testing') return '&#128300;';
-  return '&#10003;';
-}
+
 function evalIcon(s) {
   if (s === 'pass') return '✅';
   if (s === 'warn') return '⚠️';
   if (s === 'fail') return '❌';
-  return '⏭️';
+  return '—';
 }
 
 // ═══════════════════════════════════════════════
-// FILTER
+// RENDER CARDS
 // ═══════════════════════════════════════════════
-function isVisible(item) {
-  if (activeType !== 'all' && item.type !== activeType) return false;
-  if (activePhase !== 'all' && item.phase !== activePhase) return false;
-  return true;
-}
+function renderCards() {
+  const grid = document.getElementById('skills-grid');
+  const visible = ITEMS.filter(i => activeCat === 'all' || i.cat === activeCat);
+  document.getElementById('visible-count').textContent = visible.length;
+  document.getElementById('hero-count').textContent = ITEMS.length + ' skill' + (ITEMS.length !== 1 ? 's' : '');
 
-// ═══════════════════════════════════════════════
-// CARD HTML
-// ═══════════════════════════════════════════════
-function cardHTML(item) {
-  const passCount = (item.evals || []).filter(e => e.status === 'pass').length;
-  const total = (item.evals || []).length;
-  const allPass = total > 0 && passCount === total;
-  const evalBadge = total > 0
-    ? `<span class="badge ${allPass ? 'bp-released' : 'bp-testing'}">${allPass ? '✅' : '⚠️'} ${passCount}/${total} evals</span>`
-    : `<span class="badge bcat">&#8212; no evals</span>`;
-  const tagBadges = (item.tags || []).map(t => `<span class="badge bcat">${t}</span>`).join('');
-  return `
-    <div class="card" data-id="${item.id}">
-      <div>
-        <div class="card-title">${item.name}</div>
-        <div class="card-badges">
-          <span class="badge ${typeCls(item.type)}">${item.type}</span>
-          ${tagBadges}
-          <span class="badge ${phaseCls(item.phase)}">${phaseIcon(item.phase)} ${item.phase}</span>
-          ${evalBadge}
+  if (!visible.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="icon">🔍</div>
+      <h3>No skills yet</h3>
+      <p>Be the first to submit a skill in this category.</p>
+      <a class="btn-hero btn-hero-primary" style="display:inline-flex;margin:0 auto" href="https://github.com/icarofracassi/claude-code-skill-evals/issues/new?template=submit-skill.yml" target="_blank" rel="noopener">+ Submit a Skill</a>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = visible.map(item => {
+    const ev = evalSummary(item.evals);
+    const catLabel = item.cat.charAt(0).toUpperCase() + item.cat.slice(1);
+    const issueBtn = item.issueUrl
+      ? `<a class="skill-issue-link" href="${item.issueUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Issue ↗</a>`
+      : '';
+    return `<div class="skill-card" data-id="${item.id}" data-cat="${item.cat}">
+      <div class="skill-header">
+        <div class="skill-name">/${item.name}</div>
+        <span class="skill-category cat-${item.cat}">${catLabel}</span>
+      </div>
+      <div class="skill-desc">${item.desc}</div>
+      ${item.trigger ? `<div class="skill-trigger"><strong>Trigger:</strong> ${item.trigger}</div>` : ''}
+      <div class="skill-footer">
+        <span class="skill-invoke">/${item.name}</span>
+        <div class="skill-meta-right">
+          <span class="eval-pill ${ev.cls}">${ev.label}</span>
+          ${issueBtn}
         </div>
       </div>
-      <div class="card-desc">${item.desc}</div>
-      <div class="card-footer">
-        <div class="card-owner">By <strong>${item.owner}</strong></div>
-        <button class="btn-details" data-id="${item.id}">Details &#8594;</button>
-      </div>
+      <div style="font-size:11px;color:#bbb">by ${item.owner}</div>
     </div>`;
-}
+  }).join('');
 
-// ═══════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════
-function render() {
-  const main = document.getElementById('mainContent');
-
-  if (activeTab === 'how') {
-    document.getElementById('filterBar').style.display = 'none';
-    main.innerHTML = renderHow();
-    return;
-  }
-  if (activeTab === 'setup') {
-    document.getElementById('filterBar').style.display = 'none';
-    main.innerHTML = renderSetup();
-    return;
-  }
-
-  document.getElementById('filterBar').style.display = '';
-  const items = ITEMS.filter(isVisible);
-  document.getElementById('visibleCount').textContent = items.length;
-
-  if (items.length === 0) {
-    main.innerHTML = `
-      <div class="submit-empty">
-        <div class="ie-icon">&#128161;</div>
-        <h3>No skills here yet</h3>
-        <p>Be the first to submit a skill and have it automatically evaluated.</p>
-        <a class="btn-hero btn-hero-primary" style="display:inline-flex;margin:0 auto"
-           href="https://github.com/icarofracassi/claude-code-skill-evals/issues/new?template=submit-skill.yml"
-           target="_blank" rel="noopener">&#10010; Submit a Skill</a>
-      </div>`;
-    return;
-  }
-
-  main.innerHTML = `
-    <div class="sec-head">
-      <span class="sec-title">&#128736; Skills</span>
-      <span class="sec-badge">${items.length}</span>
-    </div>
-    <div class="cards-grid">${items.map(cardHTML).join('')}</div>`;
-
-  document.querySelectorAll('.btn-details, .card').forEach(el => {
-    el.addEventListener('click', e => { e.stopPropagation(); openModal(+el.dataset.id || +el.closest('.card').dataset.id); });
+  grid.querySelectorAll('.skill-card').forEach(card => {
+    card.addEventListener('click', () => openModal(+card.dataset.id));
   });
-}
-
-// ═══════════════════════════════════════════════
-// HOW IT WORKS TAB
-// ═══════════════════════════════════════════════
-function renderHow() {
-  const steps = [
-    { n:'1', title:'Submit via Issue', desc:'Open a GitHub Issue using the Submit a Skill template. Paste your skill\'s Markdown content and optional YAML test cases.' },
-    { n:'2', title:'Label triggers workflow', desc:'The label <code>status: eval-pending</code> is applied automatically and fires the GitHub Actions eval pipeline.' },
-    { n:'3', title:'Lint runs (free)', desc:'A Node.js job checks frontmatter fields, trigger language, exclusion conditions, and test case YAML shape. No API key needed.' },
-    { n:'4', title:'AI evals run (optional)', desc:'If <code>ANTHROPIC_API_KEY</code> is set as a repository secret, a second job runs LLM-based checks for trigger precision, output quality, and scope adherence.' },
-    { n:'5', title:'Results posted', desc:'Both jobs post their results as comments on the issue. The reviewer approves or requests changes, then the skill is published here.' },
-  ];
-  const stepsHtml = steps.map((s, i) => `
-    <div class="how-card">
-      <div class="how-step">${s.n}</div>
-      <div class="how-title">${s.title}</div>
-      <div class="how-desc">${s.desc}</div>
-      ${i < steps.length - 1 ? '<div class="how-arrow">&#8594;</div>' : ''}
-    </div>`).join('');
-
-  const evals = [
-    { n:1, name:'Structure lint', api:false, checks:'Frontmatter fields (<code>name</code>, <code>description</code>), trigger language, exclusion language, unresolved placeholders, word count, test case YAML shape' },
-    { n:2, name:'Trigger precision', api:true, checks:'LLM judge: is the description specific enough to route correctly? Would it match unrelated prompts?' },
-    { n:3, name:'Output quality', api:true, checks:'Runs the skill on each user-provided in-scope test prompt; checks output contains expected keywords' },
-    { n:4, name:'Scope adherence', api:true, checks:'Runs the skill on out-of-scope prompts; LLM judge verifies the skill declined or redirected correctly' },
-  ];
-  const evalsHtml = evals.map(e => `
-    <tr>
-      <td><span class="eval-num">${e.n}</span></td>
-      <td style="font-weight:700;color:var(--text)">${e.name}</td>
-      <td>${e.api ? '<span class="eval-api">API key</span>' : '<span class="eval-free">Free</span>'}</td>
-      <td>${e.checks}</td>
-    </tr>`).join('');
-
-  return `
-    <div class="sec-head"><span class="sec-title">&#9881; How it works</span></div>
-    <div class="how-grid">${stepsHtml}</div>
-
-    <div class="sec-head"><span class="sec-title">&#128203; Eval checks</span></div>
-    <table class="eval-table">
-      <thead><tr><th>#</th><th>Eval</th><th>Cost</th><th>What it checks</th></tr></thead>
-      <tbody>${evalsHtml}</tbody>
-    </table>
-
-    <div class="sec-head"><span class="sec-title">&#128196; Skill file format</span></div>
-    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:48px">
-      <pre style="font-size:.82rem;color:var(--text-mid);line-height:1.7;overflow-x:auto">---
-name: my-skill-name
-description: &gt;
-  One or two sentences describing what this skill does and when to invoke it.
-  Include trigger phrases ("Use when…") and exclusions ("Do NOT trigger on:").
----
-
-# My Skill
-
-Detailed step-by-step instructions here…</pre>
-    </div>`;
-}
-
-// ═══════════════════════════════════════════════
-// SETUP TAB
-// ═══════════════════════════════════════════════
-function renderSetup() {
-  const steps = [
-    { title:'Fork or clone the repo', body:'<a href="https://github.com/icarofracassi/claude-code-skill-evals" target="_blank" rel="noopener">github.com/icarofracassi/claude-code-skill-evals</a>' },
-    { title:'Add your Anthropic API key (optional)', body:'In <strong>Settings → Secrets and variables → Actions</strong>, add a secret named <code>ANTHROPIC_API_KEY</code>. Without it, only the free structural lint runs. <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a key at console.anthropic.com</a>.' },
-    { title:'Submit a skill', body:'Open an issue using the <strong>Submit a Skill</strong> template. The label <code>status: eval-pending</code> is applied automatically and triggers the workflow.' },
-    { title:'Review eval results', body:'Both jobs post their results as comments on the issue. Fix any failures, reapply the label to re-run, then approve and merge.' },
-    { title:'Run evals locally (optional)', body:'<code>pip install anthropic pyyaml</code>, set <code>ANTHROPIC_API_KEY</code>, write your issue body to <code>/tmp/issue_body.txt</code>, then run <code>python scripts/eval_skill.py</code>.' },
-  ];
-  return `
-    <div class="sec-head"><span class="sec-title">&#128640; Setup</span></div>
-    <ol class="setup-steps">
-      ${steps.map((s, i) => `
-        <li class="setup-step">
-          <div class="setup-num">${i + 1}</div>
-          <div class="setup-text"><strong>${s.title}</strong>${s.body}</div>
-        </li>`).join('')}
-    </ol>`;
 }
 
 // ═══════════════════════════════════════════════
 // MODAL
 // ═══════════════════════════════════════════════
-function openModal(id) {
+function parseYamlBlock(text) {
+  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return '';
+  const pairs = [];
+  let key = null, valLines = [];
+  const flush = () => { if (key) pairs.push([key, valLines.join(' ').replace(/\s+/g, ' ').trim()]); };
+  for (const line of m[1].split('\n')) {
+    const kv = line.match(/^(\w[\w_-]*):\s*(.*)/);
+    if (kv) { flush(); key = kv[1]; valLines = [kv[2].replace(/^>\s*/, '')]; }
+    else if (key && /^\s+/.test(line)) valLines.push(line.trim());
+  }
+  flush();
+  if (!pairs.length) return '';
+  return '<div class="yaml-block">' +
+    pairs.map(([k, v]) => `<span class="yaml-key">${k}:</span><span class="yaml-val">${v || '—'}</span>`).join('') +
+    '</div>';
+}
+
+async function openModal(id) {
   const item = ITEMS.find(x => x.id === id);
   if (!item) return;
 
-  document.getElementById('modalTitle').textContent = item.name;
-
-  const tagBadges = (item.tags || []).map(t => `<span class="badge bcat">${t}</span>`).join('');
-  const evalsHtml = (item.evals || []).map(e => `
-    <div class="eval-row">
-      <div class="eval-icon">${evalIcon(e.status)}</div>
-      <div class="eval-text"><strong>${e.label}</strong>${e.detail}</div>
-    </div>`).join('');
-
-  const links = [];
-  if (item.skillUrl) links.push(`<a class="modal-link modal-link-primary" href="${item.skillUrl}" target="_blank" rel="noopener">&#128196; View skill file</a>`);
-  if (item.issueUrl) links.push(`<a class="modal-link modal-link-secondary" href="${item.issueUrl}" target="_blank" rel="noopener">&#128172; View eval issue</a>`);
-  links.push(`<a class="modal-link modal-link-secondary" href="https://github.com/icarofracassi/claude-code-skill-evals/issues/new?template=submit-skill.yml" target="_blank" rel="noopener">&#10010; Submit a skill like this</a>`);
-
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-badges">
-      <span class="badge ${typeCls(item.type)}">${item.type}</span>
-      ${tagBadges}
-      <span class="badge ${phaseCls(item.phase)}">${phaseIcon(item.phase)} ${item.phase}</span>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-label">Description</div>
-      <div class="modal-section-value">${item.desc}</div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-label">Author</div>
-      <div class="modal-section-value">${item.owner}</div>
-    </div>
-    ${evalsHtml ? `
-    <div class="modal-section">
-      <div class="modal-section-label">Eval results</div>
-      <div class="modal-eval-box">${evalsHtml}</div>
-    </div>` : ''}
-    <div class="modal-section">
-      <div class="modal-section-label">Links</div>
-      <div class="modal-links">${links.join('')}</div>
-    </div>`;
-
-  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('md-title').textContent = '/' + item.name;
+  document.getElementById('md-subtitle').textContent = 'by ' + item.owner + (item.issueUrl ? ' · issue ↗' : '');
+  document.getElementById('md-body').innerHTML = '<div style="padding:48px;text-align:center;color:var(--gray)">Loading…</div>';
+  document.getElementById('md-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Build eval section HTML
+  let evalHtml = '';
+  if (item.evals && item.evals.length) {
+    evalHtml = '<div class="eval-section"><div class="eval-section-title">Eval results</div><div class="eval-rows">' +
+      item.evals.map(e => `<div class="eval-row">
+        <div class="eval-icon">${evalIcon(e.status)}</div>
+        <div><div class="eval-label">${e.label}</div><div class="eval-detail">${e.detail || ''}</div></div>
+      </div>`).join('') +
+      '</div></div>';
+  }
+
+  // Try to load skill content
+  if (item.skillUrl) {
+    // Convert blob URL to raw URL
+    const rawUrl = item.skillUrl
+      .replace('github.com', 'raw.githubusercontent.com')
+      .replace('/blob/', '/');
+    try {
+      const res = await fetch(rawUrl);
+      if (res.ok) {
+        const text = await res.text();
+        const yamlHtml = parseYamlBlock(text);
+        const bodyMd = text.replace(/^---[\s\S]*?---\n?/, '');
+        document.getElementById('md-body').innerHTML = yamlHtml + marked.parse(bodyMd) + evalHtml;
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // Fallback: just show description + evals
+  document.getElementById('md-body').innerHTML =
+    '<p style="color:var(--gray);margin-bottom:12px">' + item.desc + '</p>' +
+    (item.skillUrl ? `<p><a href="${item.skillUrl}" target="_blank" rel="noopener">View skill file ↗</a></p>` : '') +
+    evalHtml;
 }
 
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modalOverlay')) return;
-  document.getElementById('modalOverlay').classList.remove('open');
+function closeModal() {
+  document.getElementById('md-modal').classList.remove('open');
   document.body.style.overflow = '';
 }
 
+document.getElementById('md-close').addEventListener('click', closeModal);
+document.getElementById('md-modal').addEventListener('click', e => { if (e.target === document.getElementById('md-modal')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 // ═══════════════════════════════════════════════
-// TAB / FILTER SETTERS
+// TABS
 // ═══════════════════════════════════════════════
 function setTab(tab) {
   activeTab = tab;
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
-  render();
-}
-function setType(t) {
-  activeType = t;
-  document.querySelectorAll('[data-type]').forEach(el => el.classList.toggle('active', el.dataset.type === t));
-  render();
-}
-function setPhase(p) {
-  activePhase = p;
-  document.querySelectorAll('[data-phase]').forEach(el => el.classList.toggle('active', el.dataset.phase === p));
-  render();
+  ['skills','how','setup'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-links a').forEach((a, i) => {
+    a.classList.toggle('active', ['skills','how','setup'][i] === tab);
+  });
 }
 
 // ═══════════════════════════════════════════════
-// COUNTS
+// FILTERS
 // ═══════════════════════════════════════════════
-function updateCounts() {
-  document.getElementById('cnt-skills').textContent = ITEMS.length;
-}
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat;
+    renderCards();
+  });
+});
 
-// ── INIT ──
-updateCounts();
-render();
+// ── INIT
+renderCards();
 </script>
 </body>
 </html>
