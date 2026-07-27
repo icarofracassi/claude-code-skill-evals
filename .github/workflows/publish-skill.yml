@@ -1,0 +1,53 @@
+name: Publish Accepted Skill to Site
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    name: Publish skill to index.html
+    if: "github.event.label.name == 'status: accepted'"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Write issue body to file
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
+
+      - name: Append skill to site
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_URL:    ${{ github.event.issue.html_url }}
+        run: python scripts/publish_skill.py
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html skills/accepted/
+          git diff --staged --quiet || \
+            git commit -m "feat: publish accepted skill from issue #${{ github.event.issue.number }} [skip ci]"
+          git push
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ **Published to the site!**\n\nThis skill has been added to the [Claude Code Skill Evals](https://icarofracassi.github.io/claude-code-skill-evals) gallery.\n\nThe skill file was saved to `skills/accepted/skill-' + context.issue.number + '.md`.'
+            });
