@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude Code Skill Evals</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
@@ -127,6 +128,9 @@ a{text-decoration:none}
 .card-owner strong{color:var(--text-mid)}
 .btn-details{padding:7px 14px;background:transparent;border:1.5px solid var(--blue);color:var(--blue);border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-details:hover{background:var(--blue);color:#fff}
+.btn-download{padding:7px 14px;background:transparent;border:1.5px solid var(--border);color:var(--text-muted);border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-download:hover{border-color:var(--blue);color:var(--blue)}
+.btn-download:disabled{opacity:.5;cursor:not-allowed}
 
 /* ── EMPTY ── */
 .submit-empty{text-align:center;padding:80px 24px;border:2px dashed var(--border);border-radius:12px;margin:24px 0}
@@ -446,7 +450,10 @@ function render() {
       ${trigger}
       <div class="card-footer">
         <div class="card-owner">by <strong>${item.owner}</strong></div>
-        <button class="btn-details" data-id="${item.id}">Details &#8594;</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn-download" data-id="${item.id}" onclick="event.stopPropagation();downloadSkill(event,${item.id})">&#8595; Download</button>
+          <button class="btn-details" data-id="${item.id}">Details &#8594;</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -649,6 +656,43 @@ function setPhase(p) {
   activePhase = p;
   document.querySelectorAll('[data-phase]').forEach(el => el.classList.toggle('active', el.dataset.phase === p));
   render();
+}
+
+// ═══════════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════════
+async function downloadSkill(e, id) {
+  const item = ITEMS.find(x => x.id === id);
+  if (!item || !item.skillUrl) return;
+
+  const btn = e.currentTarget;
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  const rawUrl = item.skillUrl
+    .replace('github.com', 'raw.githubusercontent.com')
+    .replace('/blob/', '/');
+
+  try {
+    const res = await fetch(rawUrl);
+    if (!res.ok) throw new Error();
+    const text = await res.text();
+
+    const zip = new JSZip();
+    // preserve folder structure: skill-name/skill.md
+    zip.file(item.name + '/skill.md', text);
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = item.name + '.zip';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(_) {
+    alert('Could not download ' + item.name);
+  } finally {
+    btn.textContent = '↓ Download';
+    btn.disabled = false;
+  }
 }
 
 // ═══════════════════════════════════════════════
