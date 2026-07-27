@@ -326,6 +326,59 @@ const ITEMS = [
   },
   // ACCEPTED SKILLS - DO NOT EDIT MANUALLY
   {
+    id: 3,
+    name: "test22",
+    type: "Skill",
+    cat: "community",
+    owner: "icarof",
+    desc: "",
+    trigger: "",
+    skillUrl: "https://github.com/icarofracassi/claude-code-skill-evals/blob/master/skills/accepted/skill-6.md",
+    issueUrl: "https://github.com/icarofracassi/claude-code-skill-evals/issues/6",
+    evals: [
+        {
+            "status": "fail",
+            "label": "Missing opening --- frontmatter block",
+            "detail": ""
+        },
+        {
+            "status": "fail",
+            "label": "`name` field missing from frontmatter",
+            "detail": ""
+        },
+        {
+            "status": "fail",
+            "label": "`description` field missing from frontmatter",
+            "detail": ""
+        },
+        {
+            "status": "warn",
+            "label": "No trigger language found",
+            "detail": ""
+        },
+        {
+            "status": "warn",
+            "label": "No exclusion language found",
+            "detail": ""
+        },
+        {
+            "status": "pass",
+            "label": "No unresolved placeholders",
+            "detail": ""
+        },
+        {
+            "status": "warn",
+            "label": "Skill length unusual (1 words)",
+            "detail": ""
+        },
+        {
+            "status": "pass",
+            "label": "Test cases YAML structure looks valid",
+            "detail": ""
+        }
+    ]
+  },
+  {
     id: 2,
     name: "test1",
     type: "Skill",
